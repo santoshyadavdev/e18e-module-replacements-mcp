@@ -1,0 +1,26 @@
+{
+  "name": "e18e-module-replacements-mcp",
+  "version": "1.0.0",
+  "description": "MCP server exposing e18e module replacement data for AI assistants",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "e18e-module-replacements-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "keywords": ["mcp", "e18e", "module-replacements"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3"
+  }
+}

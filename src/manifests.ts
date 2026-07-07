@@ -44,9 +44,20 @@ let nativeManifest: NativeManifest | null = null;
 let microUtilitiesManifest: MicroUtilitiesManifest | null = null;
 let preferredManifest: PreferredManifest | null = null;
 
-async function fetchJSON<T>(url: string, name: string): Promise<T | null> {
+async function fetchJSON<T>(
+  url: string,
+  name: string,
+  timeoutMs = 10_000,
+): Promise<T | null> {
   try {
-    const response = await fetch(url);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    let response: Response;
+    try {
+      response = await fetch(url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) {
       console.error(
         `Failed to fetch ${name}: ${response.status} ${response.statusText}`,

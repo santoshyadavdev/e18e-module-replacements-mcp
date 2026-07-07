@@ -15,7 +15,10 @@ interface LookupResult {
 }
 
 export function lookupReplacement(name: string): LookupResult[] {
-  const query = name.toLowerCase();
+  const query = name.toLowerCase().trim();
+  if (!query) {
+    return [];
+  }
   const results: LookupResult[] = [];
 
   const native = getNativeManifest();

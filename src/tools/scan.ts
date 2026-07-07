@@ -17,6 +17,7 @@ export function scanDependencies(
   const results: ScanResult[] = [];
 
   for (const depName of Object.keys(dependencies)) {
+    if (!Object.hasOwn(preferred.mappings, depName)) continue;
     const mapping = preferred.mappings[depName];
     if (mapping) {
       results.push({

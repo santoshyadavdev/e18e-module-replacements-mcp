@@ -1,7 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { loadManifests } from "./manifests.js";
+import {
+  loadManifests,
+  getNativeManifest,
+  getMicroUtilitiesManifest,
+  getPreferredManifest,
+} from "./manifests.js";
 import { lookupReplacement } from "./tools/lookup.js";
 import { scanDependencies } from "./tools/scan.js";
 
@@ -21,6 +26,18 @@ server.tool(
       ),
   },
   async ({ name }) => {
+    if (!getNativeManifest() && !getMicroUtilitiesManifest() && !getPreferredManifest()) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: "Error: manifest data failed to load at startup. The server could not fetch replacement data from GitHub.",
+          },
+        ],
+        isError: true,
+      };
+    }
+
     const results = lookupReplacement(name);
 
     if (results.length === 0) {
@@ -63,6 +80,18 @@ server.tool(
       ),
   },
   async ({ dependencies }) => {
+    if (!getPreferredManifest()) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: "Error: preferred manifest failed to load at startup. The server could not fetch replacement data from GitHub.",
+          },
+        ],
+        isError: true,
+      };
+    }
+
     const results = scanDependencies(dependencies);
 
     if (results.length === 0) {

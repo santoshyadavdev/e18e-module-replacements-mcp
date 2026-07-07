@@ -7,13 +7,19 @@
   "bin": {
     "e18e-module-replacements-mcp": "dist/index.js"
   },
+  "files": ["dist"],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
   },
-  "keywords": ["mcp", "e18e", "module-replacements"],
-  "author": "",
+  "keywords": ["mcp", "e18e", "module-replacements", "model-context-protocol"],
+  "author": "Santosh Yadav",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/santoshyadavdev/e18e-module-replacements-mcp.git"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.4.3"

@@ -20,7 +20,17 @@ This MCP server fetches three manifests from the [e18e/module-replacements](http
 
 ## Installation
 
-### 1. Clone and build
+### Option 1: Use directly with npx (no install needed)
+
+No installation required — just reference it in your MCP config (see below). The package is fetched and run automatically.
+
+### Option 2: Global install
+
+```bash
+npm install -g e18e-module-replacements-mcp
+```
+
+### Option 3: Build from source
 
 ```bash
 git clone https://github.com/santoshyadavdev/e18e-module-replacements-mcp.git
@@ -29,17 +39,9 @@ npm install
 npm run build
 ```
 
-### 2. Verify the build
-
-```bash
-node dist/index.js
-# You should see "e18e module replacements MCP server running on stdio" on stderr
-# Press Ctrl+C to exit
-```
-
 ## Configuration
 
-After building, add the server to your AI assistant's MCP configuration. Replace `/absolute/path/to` with the actual path where you cloned the repo.
+Add the server to your AI assistant's MCP configuration. The examples below use `npx` so there's nothing to install. If you installed globally or built from source, replace `npx` with the path to the binary.
 
 ### Claude Desktop
 
@@ -48,14 +50,12 @@ Open your Claude Desktop config file:
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-Add the server entry:
-
 ```json
 {
   "mcpServers": {
     "e18e-module-replacements": {
-      "command": "node",
-      "args": ["/absolute/path/to/e18e-module-replacements-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "e18e-module-replacements-mcp"]
     }
   }
 }
@@ -71,8 +71,8 @@ Create or edit `.vscode/mcp.json` in your workspace (or add to your user setting
 {
   "servers": {
     "e18e-module-replacements": {
-      "command": "node",
-      "args": ["/absolute/path/to/e18e-module-replacements-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "e18e-module-replacements-mcp"]
     }
   }
 }
@@ -84,7 +84,7 @@ Open **Cursor Settings → MCP** and add a new server:
 
 - **Name:** `e18e-module-replacements`
 - **Type:** `command`
-- **Command:** `node /absolute/path/to/e18e-module-replacements-mcp/dist/index.js`
+- **Command:** `npx -y e18e-module-replacements-mcp`
 
 ### Windsurf
 
@@ -94,8 +94,8 @@ Add to your `~/.codeium/windsurf/mcp_config.json`:
 {
   "mcpServers": {
     "e18e-module-replacements": {
-      "command": "node",
-      "args": ["/absolute/path/to/e18e-module-replacements-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "e18e-module-replacements-mcp"]
     }
   }
 }

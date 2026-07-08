@@ -11,6 +11,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "dev:worker": "wrangler dev",
+    "deploy": "wrangler deploy",
     "prepublishOnly": "npm run build"
   },
   "keywords": ["mcp", "e18e", "module-replacements", "model-context-protocol"],
@@ -27,6 +29,7 @@
   "devDependencies": {
     "@types/node": "^26.1.0",
     "tsup": "^8.5.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.0.0"
   }
 }

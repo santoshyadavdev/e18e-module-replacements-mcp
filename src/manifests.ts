@@ -93,6 +93,18 @@ export async function loadManifests(): Promise<void> {
   console.error(`Loaded manifests: ${loaded.join(", ")}`);
 }
 
+/**
+ * Lazy-load manifests if not already cached in module scope.
+ * Workers isolates persist module state across requests,
+ * so this only fetches on cold start.
+ */
+export async function ensureManifestsLoaded(): Promise<void> {
+  if (nativeManifest && microUtilitiesManifest && preferredManifest) {
+    return;
+  }
+  await loadManifests();
+}
+
 export function getNativeManifest(): NativeManifest | null {
   return nativeManifest;
 }

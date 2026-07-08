@@ -173,17 +173,51 @@ Once the MCP server is connected to your AI assistant, you can ask things like:
 
 The AI assistant will automatically use the `lookup_replacement` and `scan_dependencies` tools to answer.
 
+## Remote Server (Cloudflare Workers)
+
+This MCP server can also be deployed as a remote HTTP server on Cloudflare Workers.
+
+### Local Development
+
+```bash
+npm run dev:worker
+```
+
+The server starts at `http://localhost:8787/mcp`.
+
+### Deploy
+
+```bash
+# First time: authenticate with Cloudflare
+npx wrangler login
+
+# Deploy to Workers
+npm run deploy
+```
+
+Your server will be available at `https://e18e-module-replacements-mcp.<your-account>.workers.dev/mcp`.
+
+### Add to GitHub Copilot
+
+1. Go to your GitHub organization/repo settings → Copilot → MCP Servers
+2. Click "Add MCP Server"
+3. **Label:** `e18e-module-replacements`
+4. **Server URL:** `https://e18e-module-replacements-mcp.<your-account>.workers.dev/mcp`
+5. **Authentication:** None
+6. Click "Connect"
+
 ## Development
 
 ```bash
-npm run dev   # Watch mode — rebuilds on file changes
+npm run dev          # Watch mode — rebuilds on file changes
+npm run dev:worker   # Run Workers dev server locally
 ```
 
 ## How it works
 
-1. On startup, the server fetches all three e18e manifests from GitHub
-2. Manifests are cached in memory for the lifetime of the server process
-3. The server communicates over **stdio** using the MCP protocol
+1. On startup (stdio) or first request (Workers), the server fetches all three e18e manifests from GitHub
+2. Manifests are cached in memory for the lifetime of the server process (or Workers isolate)
+3. The server communicates over **stdio** (local) or **HTTP** (Workers) using the MCP protocol
 4. If a manifest fails to load (e.g., no internet), the server still starts — tools will return an error message for the missing data source
 
 ## License

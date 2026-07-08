@@ -40,12 +40,12 @@ Both `index.ts` and `worker.ts` call `createServer()` and attach their respectiv
 
 ### Manifest Loading Strategy
 
-- **Stdio (`index.ts`):** Load manifests once at startup (current behavior). Works because stdio is a long-running process.
-- **Workers (`worker.ts`):** Fetch manifests per-request, cached via Cloudflare's Cache API with a 5-minute TTL. Workers are stateless — no persistent memory between requests.
+- **Stdio (`index.ts`):** Load manifests once at startup via `loadManifests()` (current behavior). Works because stdio is a long-running process.
+- **Workers (`worker.ts`):** Uses `ensureManifestsLoaded()` which checks all three module-level manifest variables (`&&` guard). Workers isolates persist module-level state across requests within the same isolate, so manifests are only fetched on cold start — no Cache API needed.
 
-The `manifests.ts` module will be updated to support both modes:
+The `manifests.ts` module is updated to support both modes:
 - The existing `loadManifests()` function stays for stdio (eager, module-level cache)
-- A new `loadManifestsWithCache(cache: Cache)` function is added for Workers (checks Cache API first, falls back to fetch)
+- A new `ensureManifestsLoaded()` function is added for Workers (skips fetch if all three manifests are already loaded, retries if any failed)
 
 ### Workers Request Handling
 
@@ -63,9 +63,9 @@ The `manifests.ts` module will be updated to support both modes:
 | `src/server.ts` | **NEW** — Shared `createServer()` factory with all tool registrations |
 | `src/index.ts` | **MODIFIED** — Import `createServer()` from `server.ts`, keep stdio transport |
 | `src/worker.ts` | **NEW** — Cloudflare Workers entry point with `StreamableHTTPServerTransport` |
-| `src/manifests.ts` | **MODIFIED** — Add Cache API–aware loading for Workers environment |
+| `src/manifests.ts` | **MODIFIED** — Add `ensureManifestsLoaded()` for lazy loading in Workers (reuses module-level cache) |
 | `wrangler.toml` | **NEW** — Cloudflare Workers configuration |
-| `tsup.config.ts` | **MODIFIED** — Add `worker.ts` as a second entry point with Workers-appropriate settings |
+| `tsup.config.ts` | **MODIFIED** — Convert to array config (stdio-only — worker is built by Wrangler's bundler) |
 | `package.json` | **MODIFIED** — Add `wrangler` dev dependency and deploy script |
 
 ### Deployment
@@ -97,11 +97,11 @@ compatibility_flags = ["nodejs_compat"]
 - No authentication (public data, can be added later)
 - No rate limiting (Cloudflare's built-in protections apply)
 - No custom domain (uses `*.workers.dev` subdomain; can be added later)
-- No KV/D1 storage (manifests cached via Cache API only)
+- No KV/D1 storage (manifests cached in module-level variables within Workers isolates)
 
 ## Success Criteria
 
-1. `npm run build` produces both stdio and worker entry points
+1. `npm run build` produces the stdio entry point (`dist/index.js`); Wrangler builds the worker separately
 2. `npx wrangler dev` runs the server locally and responds to MCP requests
 3. `npx wrangler deploy` deploys to Cloudflare Workers
 4. The deployed URL works in GitHub Copilot's "Add MCP Server" dialog with "None" auth

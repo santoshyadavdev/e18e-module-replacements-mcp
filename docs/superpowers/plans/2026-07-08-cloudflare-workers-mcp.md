@@ -4,7 +4,7 @@
 
 **Goal:** Add an HTTP transport entry point so the MCP server can be deployed to Cloudflare Workers and used via a remote HTTPS URL.
 
-**Architecture:** Extract shared server creation into `src/server.ts`, keep stdio in `src/index.ts`, add Workers entry point in `src/worker.ts`. Manifests are loaded lazily per-isolate (Workers isolates persist across requests, so they're only fetched once per cold start). The `WebStandardStreamableHTTPServerTransport` from the MCP SDK handles the HTTP protocol.
+**Architecture:** Extract shared server creation into `src/server.ts`, keep stdio in `src/index.ts`, add Workers entry point in `src/worker.ts`. Manifests are loaded lazily via `ensureManifestsLoaded()` which checks all three module-level manifest variables — Workers isolates persist module state across requests, so manifests are only fetched on cold start. The `WebStandardStreamableHTTPServerTransport` from the MCP SDK handles the HTTP protocol. Wrangler's built-in bundler builds the worker entry point (not tsup).
 
 **Tech Stack:** TypeScript, `@modelcontextprotocol/sdk` (WebStandardStreamableHTTPServerTransport), Cloudflare Workers, Wrangler CLI
 
@@ -19,7 +19,7 @@
 | `src/worker.ts` | Create | Workers entry point — default fetch handler, creates transport per request |
 | `src/manifests.ts` | Modify | Add `ensureManifestsLoaded()` for lazy loading in Workers (reuses existing module cache) |
 | `wrangler.toml` | Create | Cloudflare Workers config |
-| `tsup.config.ts` | Modify | Add worker entry point (no node shebang banner for worker build) |
+| `tsup.config.ts` | Modify | Convert to array config (stdio-only — worker is built by Wrangler) |
 | `package.json` | Modify | Add wrangler devDep, deploy/dev:worker scripts |
 
 ---
@@ -216,7 +216,7 @@ Add this function after the existing `loadManifests()` function (keep all existi
  * so this only fetches on cold start.
  */
 export async function ensureManifestsLoaded(): Promise<void> {
-  if (nativeManifest || microUtilitiesManifest || preferredManifest) {
+  if (nativeManifest && microUtilitiesManifest && preferredManifest) {
     return;
   }
   await loadManifests();
@@ -346,9 +346,9 @@ compatibility_date = "2026-07-01"
 compatibility_flags = ["nodejs_compat"]
 ```
 
-- [ ] **Step 2: Update `tsup.config.ts` to build both entry points**
+- [ ] **Step 2: Update `tsup.config.ts` to array config (stdio only)**
 
-Replace the entire file with:
+Convert to array config. The worker entry point is built by Wrangler's own bundler, so tsup only handles the stdio CLI build:
 
 ```typescript
 import { defineConfig } from "tsup";
@@ -368,8 +368,6 @@ export default defineConfig([
   },
 ]);
 ```
-
-Note: The worker entry point is built by `wrangler` directly (it has its own bundler), so we do NOT add `src/worker.ts` to tsup. The tsup config stays focused on the stdio CLI build only.
 
 - [ ] **Step 3: Update `package.json` — add wrangler and scripts**
 

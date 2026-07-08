@@ -99,7 +99,7 @@ export async function loadManifests(): Promise<void> {
  * so this only fetches on cold start.
  */
 export async function ensureManifestsLoaded(): Promise<void> {
-  if (nativeManifest || microUtilitiesManifest || preferredManifest) {
+  if (nativeManifest && microUtilitiesManifest && preferredManifest) {
     return;
   }
   await loadManifests();

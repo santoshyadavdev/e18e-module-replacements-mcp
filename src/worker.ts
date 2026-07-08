@@ -41,11 +41,11 @@ export default {
     // Ensure manifest data is available (no-op after first request in isolate)
     await ensureManifestsLoaded();
 
+    const server = createServer();
     try {
       const transport = new WebStandardStreamableHTTPServerTransport({
         enableJsonResponse: true,
       });
-      const server = createServer();
       await server.connect(transport);
 
       const response = await transport.handleRequest(request);
@@ -62,7 +62,6 @@ export default {
         "mcp-session-id, mcp-protocol-version",
       );
 
-      await server.close();
       return corsResponse;
     } catch {
       return new Response(
@@ -72,6 +71,8 @@ export default {
           headers: { "Content-Type": "application/json" },
         },
       );
+    } finally {
+      await server.close();
     }
   },
 };
